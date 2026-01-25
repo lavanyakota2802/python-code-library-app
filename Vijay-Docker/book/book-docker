@@ -1,0 +1,5 @@
+FROM python:3.14-alpine
+COPY book/requirements.txt .
+RUN pip install -r requirements.txt
+COPY book/book_service.py .
+CMD ["python", "book_service.py"]
