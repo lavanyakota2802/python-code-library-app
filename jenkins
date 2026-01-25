@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('checkout')
+        {
+            steps 
+            {
+                git "https://github.com/vijayavbodeddula/python-code-library-app"
+            }
+        }
+        stage('remove') 
+        {
+            steps 
+            {
+                sh "docker rm -f db || true"
+                sh "docker rmi -f vijayabodeddula/python-library:dbimage || true"
+                
+                sh "docker rm -f auth || true"
+                sh "docker rmi -f vijayabodeddula/python-library:authimage || true"
+                
+                sh "docker rm -f book || true"
+                sh "docker rmi -f vijayabodeddula/python-library:bookimage || true"
+                
+                sh "docker rm -f barrow || true"
+                sh "docker rmi -f vijayabodeddula/python-library:barrowimage || true"
+                
+                sh "docker rm -f barrow || true"
+                sh "docker rmi -f vijayabodeddula/python-library:appimage || true"
+                
+            }
+        }
+        
+        stage('build') 
+        {
+            steps 
+            {
+                sh "docker build -t vijayabodeddula/python-library:dbimage -f Vijay-Docker/DB/db-docker ."
+                sh "docker build -t vijayabodeddula/python-library:authimage -f Vijay-Docker/auth/auth-docker ."
+                sh "docker build -t vijayabodeddula/python-library:bookimage -f Vijay-Docker/book/book-docker ."
+                sh "docker build -t vijayabodeddula/python-library:barrowimage -f Vijay-Docker/barrow/barrow-docker ."
+                sh "docker build -t vijayabodeddula/python-library:appimage ."
+            }
+        }
+        stage('deploy') 
+        {
+            steps
+            {
+                git "https://github.com/vijayavbodeddula/python-code-library-app"
+            }
+        }
+    }
+}
