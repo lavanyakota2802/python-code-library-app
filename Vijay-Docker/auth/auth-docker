@@ -1,5 +1,6 @@
 FROM python:3.14-alpine
 COPY auth/requirements.txt .
+RUN "ls"
 RUN "pip install requirements.txt"
 COPY auth/auth_service.py auth_service.py
 CMD ["python","auth_service.py"]
