@@ -1,0 +1,5 @@
+FROM python:3.14-alpine
+COPY book/requirements.txt .
+RUN pip install -r requirements.txt
+COPY borrow/borrow_service.py .
+CMD ["python","borrow_service.py"]
