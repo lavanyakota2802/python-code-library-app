@@ -12,17 +12,17 @@ pipeline {
                 git "https://github.com/vijayavbodeddula/python-code-library-app.git"
             }
         }
-        // stage('CQA') 
-        // {
-        //     steps 
-        //     {
+        stage('CQA') 
+        {
+            steps 
+            {
                 
-        //         withSonarQubeEnv("sonar") 
-        //         {
-        //             sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vijay"
-        //         }
-        //     }
-        // }
+                withSonarQubeEnv("sonar") 
+                {
+                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vijay"
+                }
+            }
+        }
         stage("docker-images-remove")
         {
             steps
@@ -66,7 +66,7 @@ pipeline {
                 sh "docker run -d --name app_service --network new-net -p  5000:5000 vijayabodeddula/repo:appimage"
                 sh "docker run -d --name borrow_service --network new-net -p  5003:5003 vijayabodeddula/repo:borrowimage"
                 sh "docker run -d --name book_service --network new-net -p  5002:5002 vijayabodeddula/repo:bookimage"
-                sh "docker run -d --name db_s --network new-net -p  3306:3306 vijayabodeddula/repo:dbimage"
+                sh "docker run -d --name db --network new-net -p  3306:3306 vijayabodeddula/repo:dbimage"
             }
         }
     }
