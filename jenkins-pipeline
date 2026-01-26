@@ -1,50 +1,72 @@
 pipeline {
     agent any
+    environment
+    {
+        scannerHome= tool "SonarScanner"
+    }
     stages {
-        stage('checkout')
+        stage('Checkout') 
         {
             steps 
             {
-                git "https://github.com/vijayavbodeddula/python-code-library-app"
+                git "https://github.com/vijayavbodeddula/python-code-library-app.git"
             }
         }
-        stage('remove') 
-        {
-            steps 
-            {
-                sh "docker rm -f db || true"
-                sh "docker rmi -f vijayabodeddula/python-library:dbimage || true"
+        // stage('CQA') 
+        // {
+        //     steps 
+        //     {
                 
-                sh "docker rm -f auth || true"
-                sh "docker rmi -f vijayabodeddula/python-library:authimage || true"
-                
-                sh "docker rm -f book || true"
-                sh "docker rmi -f vijayabodeddula/python-library:bookimage || true"
-                
-                sh "docker rm -f barrow || true"
-                sh "docker rmi -f vijayabodeddula/python-library:barrowimage || true"
-                
-                sh "docker rm -f barrow || true"
-                sh "docker rmi -f vijayabodeddula/python-library:appimage || true"
-                
-            }
-        }
-        stage('build') 
-        {
-            steps 
-            {
-                sh "docker build -t vijayabodeddula/python-library:dbimage -f Vijay-Docker/DB/db-docker ."
-                sh "docker build -t vijayabodeddula/python-library:authimage -f Vijay-Docker/auth/auth-docker ."
-                sh "docker build -t vijayabodeddula/python-library:bookimage -f Vijay-Docker/book/book-docker ."
-                sh "docker build -t vijayabodeddula/python-library:barrowimage -f Vijay-Docker/barrow/barrow-docker ."
-                sh "docker build -t vijayabodeddula/python-library:appimage ."
-            }
-        }
-        stage('deploy') 
+        //         withSonarQubeEnv("sonar") 
+        //         {
+        //             sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vijay"
+        //         }
+        //     }
+        // }
+        stage("docker-images-remove")
         {
             steps
             {
-                git "https://github.com/vijayavbodeddula/python-code-library-app"
+                sh "docker rmi vijayabodeddula/repo:dbimage || true"
+                sh "docker rmi -f vijayabodeddula/repo:authimage || true"
+                sh "docker rmi vijayabodeddula/repo:appimage || true"
+                sh "docker rmi -f vijayabodeddula/repo:bookimage || true"
+                sh "docker rmi vijayabodeddula/repo:borrowimage || true"
+                
+                
+                
+                sh "docker rm -f auth_service || true"
+                sh "docker rm -f app_service || true"
+                sh "docker rm -f borrow_service || true"
+                sh "docker rm -f book_service || true"
+                sh "docker rm -f db || true"
+                
+                sh "docker network rm -f new-net || true"
+                
+            }
+        }
+        stage("docker-build")
+        {
+            steps
+            {
+                sh "docker build -t vijayabodeddula/repo:authimage -f ./Docker/auth/Dockerfile ."
+                sh "docker build -t vijayabodeddula/repo:appimage -f ./Docker/app/Dockerfile ."
+                sh "docker build -t vijayabodeddula/repo:borrowimage -f ./Docker/barrow/Dockerfile ."
+                sh "docker build -t vijayabodeddula/repo:bookimage -f ./Docker/book/Dockerfile ."
+                sh "docker build -t vijayabodeddula/repo:dbimage -f ./Docker/db/Dockerfile ."
+            }
+        }
+        stage("docker-container")
+        {
+            steps
+            {
+                sh "docker network rm -f new-net || true"
+                sh "docker network create new-net"
+                sh "docker run -d --name auth_service --network new-net -p  5001:5001 vijayabodeddula/repo:authimage"
+                sh "docker run -d --name app_service --network new-net -p  5000:5000 vijayabodeddula/repo:appimage"
+                sh "docker run -d --name borrow_service --network new-net -p  5003:5003 vijayabodeddula/repo:borrowimage"
+                sh "docker run -d --name book_service --network new-net -p  5002:5002 vijayabodeddula/repo:bookimage"
+                sh "docker run -d --name db_s --network new-net -p  3306:3306 vijayabodeddula/repo:dbimage"
             }
         }
     }
